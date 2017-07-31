@@ -19,15 +19,23 @@ void app_main(void)
 
     rak811_init(4, 5);
 
+    rak811_version();
+
     while(1) {
-        rak811_sleep();
+        //rak811_sleep();
         
-        vTaskDelay(500 / portTICK_PERIOD_MS);
+        //vTaskDelay(500 / portTICK_PERIOD_MS);
 
-        rak811_wakeup();
+        //rak811_wakeup();
 
-        rak811_send_cmd("at+version\r\n");
+        rak811_version();
+
+        //rak811_mode(1);
         
+        rak811_set_app_eui("39d7119f920f7952");
+
+        rak811_set_app_key("a6b08140dae1d795ebfa5a6dee1f4dbd");
+
         vTaskDelay(500 / portTICK_PERIOD_MS);
     }
     

@@ -54,7 +54,9 @@ void rak811_send_cmd_response(char *response, char *cmd) {
 
     uart_write_bytes(uart_interface, (const char*)cmd, strlen(cmd));
 
-    int len = uart_read_bytes(uart_interface, data, uart_buf_size, 50 / portTICK_PERIOD_MS);
+    int len = uart_read_bytes(uart_interface, data, uart_buf_size, 100 / portTICK_PERIOD_MS);
+
+    ESP_LOGD(TAG, "Got %d Bytes back\n", len);
 
     /*
     int modifier = 0;
@@ -86,11 +88,11 @@ int rak811_send_cmd_cmp(char *cmp, char *cmd) {
     char response[200];
     rak811_send_cmd_response(response, cmd);
 
-    //printf("%s", response);
-
-    if(strcmp(cmp, response) == 0) {
+    if(strstr(response, cmp) != 0) {
+        ESP_LOGD(TAG, "Success in command %s, response %s", cmd, response);
         return 1;
     } else {
+        ESP_LOGE(TAG, "Error in command %s, response %s", cmd, response);
         return 0;
     }
 }
@@ -102,15 +104,12 @@ void rak811_send_cmd(char *cmd) {
     ESP_LOGD(TAG, "Command: %s, Response: %s", cmd, response);
 }
 
+void rak811_version(void) {
+    rak811_send_cmd_cmp("OK", "at+version\r\n");
+}
+
 void rak811_sleep(void) {
-    char response[200];
-    if(rak811_send_cmd_cmp("OK", "at+sleep\r\n")) {
-        ESP_LOGD(TAG, "Success in RAK811 Sleep");
-    } else {
-        ESP_LOGE(TAG, "Error in RAK811 Sleep");
-    }
-
-
+    rak811_send_cmd_cmp("OK", "at+sleep\r\n");
 }
 
 void rak811_wakeup(void) {
@@ -118,4 +117,24 @@ void rak811_wakeup(void) {
     rak811_send_cmd_response(response, "at+\r\n");
 
     ESP_LOGD(TAG, "Success in RAK811 Wakeup");
+}
+
+void rak811_mode(uint8_t mode) {
+    if(mode == 0) {
+        rak811_send_cmd_cmp("OK", "at+mode=0\r\n");
+    } else if(mode == 1) {
+        rak811_send_cmd_cmp("OK", "at+mode=1\r\n");
+    }
+}
+
+void rak811_set_app_eui(char *app_eui) {
+    char mycmd[50];
+    sprintf(mycmd, "at+set_config=app_eui:%s\r\n", app_eui);
+    rak811_send_cmd_cmp("OK", mycmd);
+}
+
+void rak811_set_app_key(char *app_key) {
+    char mycmd[50];
+    sprintf(mycmd, "at+set_config=app_key:%s\r\n", app_key);
+    rak811_send_cmd_cmp("OK", mycmd);
 }
