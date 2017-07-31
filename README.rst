@@ -1,12 +1,8 @@
-ESP-IDF template app
+ESP-IDF RAK811 Implementation
 ====================
 
-This is a template application to be used with `Espressif IoT Development Framework`_ (ESP-IDF). 
+This is a very simple implementation to use the RAK811 with the ESP32. It is currently in the process of getting builded up. It currently supports sending "legacy" AT commands to the module and putting and retreive it from sleep mode.
 
-Please check ESP-IDF docs for getting started instructions.
-
-Code in this repository is Copyright (C) 2016 Espressif Systems, licensed under the Apache License 2.0 as described in the file LICENSE.
-
-.. _Espressif IoT Development Framework: https://github.com/espressif/esp-idf
+In future this component should get all important functions as full C API.
 
 
