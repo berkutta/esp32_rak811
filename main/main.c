@@ -19,7 +19,7 @@ void app_main(void)
 {
     printf("ESP32 alive \n");
 
-    rak811_init(4, 5);
+    rak811_init(18, 19);
 
     rak811_version();
     rak811_version();

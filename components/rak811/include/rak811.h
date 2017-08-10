@@ -8,6 +8,7 @@
 
 void rak811_init(uint8_t tx, uint8_t rx);
 uint8_t rak811_exchance_data(char *tx_data, uint8_t tx_length, char *rx_data);
+uint8_t rak811_exchance_data_waiting(char *tx_data, uint8_t tx_length, char *rx_data);
 void rak811_send_cmd_response(char *response, char *cmd);
 int rak811_send_cmd_cmp(char *cmp, char *cmd);
 void rak811_send_cmd(char *cmd);

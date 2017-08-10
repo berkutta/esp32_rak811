@@ -62,6 +62,22 @@ uint8_t rak811_exchance_data(char *tx_data, uint8_t tx_length, char *rx_data) {
     return rx_length; 
 }
 
+uint8_t rak811_exchance_data_waiting(char *tx_data, uint8_t tx_length, char *rx_data) {
+    uart_write_bytes(uart_interface, (const char*)tx_data, tx_length);
+
+    int rx_length = uart_read_bytes(uart_interface, (const char*)rx_data, uart_buf_size, 8000 / portTICK_PERIOD_MS);
+
+    ESP_LOGD(TAG, "Exchanged data, tx %d Bytes, rx %d Bytes", tx_length, rx_length)
+
+    // Doesn' work reliable
+    // Cut of \r\n and place \0
+    //rx_data[strlen(rx_data) - 2] = '\0';
+
+    rx_data[rx_length - 2] = '\0';
+
+    return rx_length; 
+}
+
 void rak811_send_cmd_response(char *response, char *cmd) {
     rak811_exchance_data(cmd, strlen(cmd), response);
 
