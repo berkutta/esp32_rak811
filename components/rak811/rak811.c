@@ -46,53 +46,46 @@ void rak811_init(uint8_t tx, uint8_t rx) {
     */
 }
 
+uint8_t rak811_exchance_data(char *tx_data, uint8_t tx_length, char *rx_data) {
+    uart_write_bytes(uart_interface, (const char*)tx_data, tx_length);
+
+    int rx_length = uart_read_bytes(uart_interface, (const char*)rx_data, uart_buf_size, 500 / portTICK_PERIOD_MS);
+
+    ESP_LOGD(TAG, "Exchanged data, tx %d Bytes, rx %d Bytes", tx_length, rx_length)
+
+    // Doesn' work reliable
+    // Cut of \r\n and place \0
+    //rx_data[strlen(rx_data) - 2] = '\0';
+
+    rx_data[rx_length - 2] = '\0';
+
+    return rx_length; 
+}
+
 void rak811_send_cmd_response(char *response, char *cmd) {
-    uint8_t* data = (uint8_t*) malloc(uart_buf_size);
-    char answer_string[uart_buf_size];
-
-    // printf("Command: %s", cmd);
-
-    uart_write_bytes(uart_interface, (const char*)cmd, strlen(cmd));
-
-    int len = uart_read_bytes(uart_interface, data, uart_buf_size, 50 / portTICK_PERIOD_MS);
-
-    /*
-    int modifier = 0;
-
-    for(int i = 0; i <= 10; i++) {
-        if( ((data[i] == 'E') && (data[i+1] == 'R')) || ((data[i] == 'O') && (data[i+1] == 'K')) ) {
-            modifier = i;
-            printf("Modifier = %d", i);
-            break;
-        }
-    }
-    */
-    
-    int j = 0;
-
-    do {
-        answer_string[j] = data[j];
-        j++;
-    } while( (data[j] != '\r') && (data[j+1] != '\n') && (j <= uart_buf_size));
-
-    answer_string[j] = '\0';
-
-    strcpy(response, answer_string);
+    rak811_exchance_data(cmd, strlen(cmd), response);
 
     vTaskDelay(20 / portTICK_PERIOD_MS);
 }
 
 int rak811_send_cmd_cmp(char *cmp, char *cmd) {
     char response[200];
-    rak811_send_cmd_response(response, cmd);
+    char mycmd[200];
 
-    //printf("%s", response);
+    strcpy(mycmd, cmd);
 
-    if(strcmp(cmp, response) == 0) {
+    rak811_send_cmd_response(response, mycmd);
+
+    mycmd[strlen(mycmd) - 2] = '\0';
+
+    if(strstr(response, cmp) != 0) {
+        ESP_LOGD(TAG, "Success in command %s, response %s", mycmd, response);
         return 1;
     } else {
+        ESP_LOGE(TAG, "Error in command %s, response %s", mycmd, response);
         return 0;
     }
+
 }
 
 void rak811_send_cmd(char *cmd) {
@@ -102,15 +95,12 @@ void rak811_send_cmd(char *cmd) {
     ESP_LOGD(TAG, "Command: %s, Response: %s", cmd, response);
 }
 
+void rak811_version(void) {
+    rak811_send_cmd_cmp("OK", "at+version\r\n");
+}
+
 void rak811_sleep(void) {
-    char response[200];
-    if(rak811_send_cmd_cmp("OK", "at+sleep\r\n")) {
-        ESP_LOGD(TAG, "Success in RAK811 Sleep");
-    } else {
-        ESP_LOGE(TAG, "Error in RAK811 Sleep");
-    }
-
-
+    rak811_send_cmd_cmp("OK", "at+sleep\r\n");
 }
 
 void rak811_wakeup(void) {
@@ -118,4 +108,28 @@ void rak811_wakeup(void) {
     rak811_send_cmd_response(response, "at+\r\n");
 
     ESP_LOGD(TAG, "Success in RAK811 Wakeup");
+}
+
+void rak811_mode(uint8_t mode) {
+    if(mode == 0) {
+        rak811_send_cmd_cmp("OK", "at+mode=0\r\n");
+    } else if(mode == 1) {
+        rak811_send_cmd_cmp("OK", "at+mode=1\r\n");
+    }
+}
+
+void rak811_set_app_eui(char *app_eui) {
+    char mycmd[50] = "at+set_config=app_eui:";
+    strcat(mycmd, app_eui);
+    strcat(mycmd, "\r\n");
+
+    rak811_send_cmd_cmp("OK", mycmd);
+}
+
+void rak811_set_app_key(char *app_key) {
+    char mycmd[80] = "at+set_config=app_key:";
+    strcat(mycmd, app_key);
+    strcat(mycmd, "\r\n");
+
+    rak811_send_cmd_cmp("OK", mycmd);
 }
