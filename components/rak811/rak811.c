@@ -149,3 +149,9 @@ void rak811_set_app_key(char *app_key) {
 
     rak811_send_cmd_cmp("OK", mycmd);
 }
+
+void rak811_get_dev_eui(void) {
+    char mycmd[80] = "at+get_config=dev_eui\r\n";
+
+    rak811_send_cmd_cmp("OK", mycmd);
+}

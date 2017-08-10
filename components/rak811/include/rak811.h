@@ -18,5 +18,6 @@ void rak811_wakeup(void);
 void rak811_mode(uint8_t mode);
 void rak811_set_app_eui(char *app_eui);
 void rak811_set_app_key(char *app_key);
+void rak811_get_dev_eui(void);
 
 #endif

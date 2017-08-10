@@ -34,16 +34,22 @@ void app_main(void)
         //rak811_version();
 
         //rak811_mode(1);
-        
-        rak811_set_app_eui("39d7119f920f7952");
 
-        rak811_set_app_key("a6b08140dae1d795ebfa5a6dee1f4dbd");
+        rak811_get_dev_eui();
+        
+        rak811_set_app_eui("70b3d57ef0006431");
+
+        rak811_set_app_key("432F69BDC9BED9FFFBC2818CB001607D");
 
         char mydata[100];
 
         //rak811_exchance_data("at+set_config=app_eui:39d7119f920f7952\r\n", strlen("at+set_config=app_eui:39d7119f920f7952\r\n"), &mydata);
 
         //printf("%s", mydata);
+
+        rak811_exchance_data_waiting("at+join=otaa\r\n", strlen("at+join=otaa\r\n"), &mydata);
+
+        printf("data: %s\n", mydata);
 
         vTaskDelay(500 / portTICK_PERIOD_MS);
     }
