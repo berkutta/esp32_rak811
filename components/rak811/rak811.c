@@ -65,9 +65,10 @@ uint8_t rak811_exchance_data(char *tx_data, uint8_t tx_length, char *rx_data) {
 uint8_t rak811_exchance_data_waiting(char *tx_data, uint8_t tx_length, char *rx_data) {
     uart_write_bytes(uart_interface, (const char*)tx_data, tx_length);
 
-    int rx_length = uart_read_bytes(uart_interface, (const char*)rx_data, uart_buf_size, 8000 / portTICK_PERIOD_MS);
+    int rx_length = uart_read_bytes(uart_interface, (const char*)rx_data, uart_buf_size, 12000 / portTICK_PERIOD_MS);
 
     ESP_LOGD(TAG, "Exchanged data, tx %d Bytes, rx %d Bytes", tx_length, rx_length)
+    ESP_LOGD(TAG, "Answer: %s", rx_data);
 
     // Doesn' work reliable
     // Cut of \r\n and place \0
@@ -121,9 +122,9 @@ void rak811_sleep(void) {
 
 void rak811_wakeup(void) {
     char response[200];
-    rak811_send_cmd_response(response, "at+\r\n");
+    rak811_send_cmd_response(response, "at\r\n");
 
-    ESP_LOGD(TAG, "Success in RAK811 Wakeup");
+    ESP_LOGD(TAG, "Success in RAK811 Wakeup, %s", response);
 }
 
 void rak811_mode(uint8_t mode) {
@@ -132,6 +133,22 @@ void rak811_mode(uint8_t mode) {
     } else if(mode == 1) {
         rak811_send_cmd_cmp("OK", "at+mode=1\r\n");
     }
+}
+
+void rak811_join_otaa(void) {
+    char mydata[100];
+
+    rak811_exchance_data_waiting("at+join=otaa\r\n", strlen("at+join=otaa\r\n"), &mydata);
+}
+
+void rak811_send(char *port, char *data) {
+    char mycmd[80] = "at+send=0,";
+    strcat(mycmd, port);
+    strcat(mycmd, ",");
+    strcat(mycmd, data);
+    strcat(mycmd, "\r\n");
+
+    rak811_send_cmd_cmp("OK", mycmd);
 }
 
 void rak811_set_app_eui(char *app_eui) {

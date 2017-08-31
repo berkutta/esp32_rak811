@@ -16,6 +16,8 @@ void rak811_version(void);
 void rak811_sleep(void);
 void rak811_wakeup(void);
 void rak811_mode(uint8_t mode);
+void rak811_join_otaa(void);
+void rak811_send(char *port, char *data);
 void rak811_set_app_eui(char *app_eui);
 void rak811_set_app_key(char *app_key);
 void rak811_get_dev_eui(void);
